@@ -40,14 +40,21 @@ class OptimizationResult:
     explanation: str
     best_practices_applied: List[str]
     compatibility_score: int
-    relevance_analysis: Optional[str] # <-- MEJORA 2: Nuevo campo para el análisis de relevancia
+    relevance_analysis: Optional[str]
 
 class PromptOptimizer:
     def __init__(self):
-        # Obtener API key del archivo .env
-        self.api_key = os.getenv("OPENAI_API_KEY")
+        # Obtener API key
+        try:
+            # Para Streamlit Cloud (usando secrets)
+            self.api_key = st.secrets["OPENAI_API_KEY"]
+        except:
+            # Para desarrollo local (usando .env)
+            load_dotenv()
+            self.api_key = os.getenv("OPENAI_API_KEY")
+            
         if not self.api_key:
-            raise ValueError("OPENAI_API_KEY no encontrada en el archivo .env")
+            raise ValueError("OPENAI_API_KEY no encontrada en secrets o .env")
         
         self.client = OpenAI(api_key=self.api_key)
     
@@ -86,7 +93,7 @@ class PromptOptimizer:
                 explanation=parsed_result.get("explanation", ""),
                 best_practices_applied=parsed_result.get("best_practices_applied", []),
                 compatibility_score=compatibility_score,
-                relevance_analysis=parsed_result.get("relevance_analysis", "") # <-- MEJORA 2: Asignar resultado del análisis
+                relevance_analysis=parsed_result.get("relevance_analysis", "") 
             )
             
         except Exception as e:
@@ -527,4 +534,5 @@ def display_results(result: OptimizationResult):
         )
 
 if __name__ == "__main__":
+
     main()
